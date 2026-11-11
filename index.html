@@ -1,0 +1,2015 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <title>LenguaQuest - Ruta de las Palabras</title>
+  
+  <!-- Fonts: Fredoka & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6.5.1 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- React & React DOM UMD -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Framer Motion -->
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Banco de Preguntas -->
+  <script src="questions.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            display: ['Fredoka', 'sans-serif'],
+          },
+          colors: {
+            duoGreen: '#58cc02',
+            duoGreenDark: '#46a302',
+            duoBlue: '#1cb0f6',
+            duoBlueDark: '#1899d6',
+            duoOrange: '#ff9600',
+            duoOrangeDark: '#e08400',
+            duoPurple: '#ce82ff',
+            duoPurpleDark: '#b060e0',
+            duoRed: '#ff4b4b',
+            duoRedDark: '#ea2b2b',
+            duoYellow: '#ffc800',
+            duoYellowDark: '#e0b000',
+            duoEmerald: '#10b981',
+            duoEmeraldDark: '#059669',
+            duoBgSuccess: '#d7ffb8',
+            duoTextSuccess: '#58a700',
+            duoBgError: '#ffdfe0',
+            duoTextError: '#ea2b2b',
+            duoPink:'#F472B6',
+            duoPurblue:'#844ae8',
+            duoCyan:'#4ae894',
+
+          },
+          boxShadow: {
+            'duo-3d': '0 6px 0 0 rgba(0, 0, 0, 0.1)',
+            'btn-green': '0 6px 0 0 #46a302',
+            'btn-blue': '0 6px 0 0 #1899d6',
+            'btn-orange': '0 6px 0 0 #e08400',
+            'btn-purple': '0 6px 0 0 #b060e0',
+            'btn-red': '0 6px 0 0 #ea2b2b',
+            'btn-yellow': '0 6px 0 0 #e0b000',
+            'btn-slate': '0 6px 0 0 #cbd5e1',
+            'btn-emerald': '0 6px 0 0 #059669',
+            'duo-card': '0 4px 0 0 #e2e8f0',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #ffffff;
+      color: #1E293B;
+      user-select: none;
+      overflow-x: hidden;
+      background-image: radial-gradient(#f1f5f9 2px, transparent 2px);
+      background-size: 24px 24px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    html.dark body {
+      background-color: #0f172a;
+      color: #f8fafc;
+      background-image: radial-gradient(#1e293b 2px, transparent 2px);
+    }
+
+    .duo-pressable:active {
+      transform: translateY(6px) !important;
+      box-shadow: none !important;
+    }
+    
+    .duo-card-pressable:active {
+      transform: translateY(4px) !important;
+      box-shadow: none !important;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      15% { transform: translate(-12px, 8px) rotate(-1deg); }
+      30% { transform: translate(12px, -8px) rotate(1deg); }
+      45% { transform: translate(-8px, -6px) rotate(-0.5deg); }
+      60% { transform: translate(8px, 6px) rotate(0.5deg); }
+      75% { transform: translate(-4px, 2px); }
+    }
+    .screen-shake {
+      animation: shake 0.45s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    @keyframes flashRed {
+      0% { box-shadow: inset 0 0 0 0 rgba(255, 75, 75, 0); }
+      30% { box-shadow: inset 0 0 60px 15px rgba(255, 75, 75, 0.45); }
+      100% { box-shadow: inset 0 0 0 0 rgba(255, 75, 75, 0); }
+    }
+    .flash-red {
+      animation: flashRed 0.5s ease-out;
+    }
+
+    @keyframes flashGreen {
+      0% { box-shadow: inset 0 0 0 0 rgba(88, 204, 2, 0); }
+      30% { box-shadow: inset 0 0 60px 15px rgba(88, 204, 2, 0.45); }
+      100% { box-shadow: inset 0 0 0 0 rgba(88, 204, 2, 0); }
+    }
+    .flash-green {
+      animation: flashGreen 0.5s ease-out;
+    }
+
+    @keyframes floatDuo {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0px); }
+    }
+    .animate-float-duo {
+      animation: floatDuo 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen selection:bg-duoGreen selection:text-white flex flex-col justify-between">
+  <div id="root" class="flex-1 flex flex-col"></div>
+
+  <footer class="w-full text-center text-xs font-bold text-slate-400 dark:text-slate-500 py-6 border-t-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
+    LenguaQuest — Plataforma Interactiva de Lengua Castellana y Literatura. Versión PRO (Libre de Anuncios).
+  </footer>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    const { motion, AnimatePresence } = window.Motion;
+
+    // --- SINTETIZADOR DE AUDIO ---
+    const playSound = (type) => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+
+        if (type === 'pop') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'success') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.08);
+          osc.frequency.setValueAtTime(783.99, now + 0.16);
+          osc.frequency.setValueAtTime(1046.50, now + 0.24);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.start(now);
+          osc.stop(now + 0.45);
+        } else if (type === 'error') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'heal') {
+          osc.type = 'triangle';
+          [350, 450, 550, 700, 900].forEach((freq, idx) => {
+            osc.frequency.setValueAtTime(freq, now + idx * 0.07);
+          });
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+          osc.start(now);
+          osc.stop(now + 0.5);
+        } else if (type === 'cpr') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.exponentialRampToValueAtTime(350, now + 0.08);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
+        } else if (type === 'heartbeat') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(80, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.15);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        } else if (type === 'lifeGain') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now);
+          osc.frequency.setValueAtTime(880.00, now + 0.1);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        } else if (type === 'gemGain') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(783.99, now);
+          osc.frequency.setValueAtTime(1174.66, now + 0.08);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'fanfare') {
+          osc.type = 'triangle';
+          [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach((freq, idx) => {
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+          });
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+          osc.start(now);
+          osc.stop(now + 0.65);
+        }
+      } catch (e) {
+        console.warn("Audio no permitido", e);
+      }
+    };
+
+    const triggerConfetti = () => {
+      if (window.confetti) {
+        window.confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#58cc02', '#1cb0f6', '#ff9600', '#ce82ff', '#ffc800']
+        });
+      }
+    };
+
+    // --- PANTALLA DE RESULTADOS ---
+    function ResultsView({ resultData, setCurrentView }) {
+      const { stars, moduleName, xpEarned } = resultData;
+
+      useEffect(() => {
+        playSound('fanfare');
+        setTimeout(() => triggerConfetti(), 300);
+      }, []);
+
+      return (
+        <div className="max-w-2xl mx-auto flex flex-col items-center justify-center space-y-8 py-12 text-center">
+          <h2 className="text-4xl sm:text-5xl font-display font-black text-duoYellow drop-shadow-md">
+            ¡Lección Completada!
+          </h2>
+          <p className="text-xl font-bold text-slate-600 dark:text-slate-300">
+            Has dominado el módulo: <span className="text-slate-800 dark:text-white">{moduleName}</span>
+          </p>
+
+          <div className="flex gap-4 items-center justify-center my-6">
+            <div className="bg-amber-100 dark:bg-amber-900/40 border-[3px] border-amber-300 dark:border-amber-700 rounded-[24px] p-6 w-32 flex flex-col items-center">
+              <i className="fa-solid fa-star text-4xl text-amber-500 mb-2"></i>
+              <span className="text-2xl font-black text-amber-700 dark:text-amber-300">+{stars}</span>
+            </div>
+            <div className="bg-blue-100 dark:bg-blue-900/40 border-[3px] border-blue-300 dark:border-blue-700 rounded-[24px] p-6 w-32 flex flex-col items-center">
+              <i className="fa-solid fa-bolt text-4xl text-blue-500 mb-2"></i>
+              <span className="text-2xl font-black text-blue-700 dark:text-blue-300">+{xpEarned}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setCurrentView('path')}
+            className="w-full max-w-md bg-duoGreen border-x-2 border-t-2 border-b-[6px] border-black/10 text-white font-display font-black text-xl py-4 rounded-[24px] shadow-btn-green duo-pressable uppercase tracking-wider mt-8"
+          >
+            Continuar
+          </button>
+        </div>
+      );
+    }
+
+    // --- PERFIL Y ESTADÍSTICAS ---
+    function ProfileView({ xp, streak, nodeProgress, setCurrentView, isDarkMode, toggleDarkMode }) {
+      const fileInputRef = useRef(null);
+
+      const handleExport = () => {
+        playSound('pop');
+        const data = {
+          lq_hearts: localStorage.getItem('lq_hearts'),
+          lq_xp: localStorage.getItem('lq_xp'),
+          lq_gems: localStorage.getItem('lq_gems'),
+          lq_streak: localStorage.getItem('lq_streak'),
+          lq_nodeProgress: localStorage.getItem('lq_nodeProgress')
+        };
+        const str = JSON.stringify(data);
+        const enc = btoa(unescape(encodeURIComponent(str))).split('').reverse().join('');
+        const blob = new Blob([enc], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'lenguaquest_progreso.txt';
+        a.click();
+      };
+
+      const handleImport = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const content = event.target.result;
+            let data;
+            try {
+               const dec = decodeURIComponent(escape(atob(content.split('').reverse().join(''))));
+               data = JSON.parse(dec);
+            } catch(e) {
+               data = JSON.parse(content);
+            }
+
+            if (data.lq_xp !== undefined) {
+               Object.keys(data).forEach(key => {
+                 if(data[key] !== null) localStorage.setItem(key, data[key]);
+               });
+               playSound('success');
+               alert("¡Tu progreso se ha restaurado correctamente!");
+               window.location.reload();
+            } else {
+               alert("El archivo no tiene un formato válido para LenguaQuest.");
+            }
+          } catch(err) {
+            alert("Error al leer el archivo.");
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      useEffect(() => {
+        let completed = 0;
+        const total = 56; 
+        Object.values(nodeProgress).forEach(val => { if (val > 0) completed++; });
+        let pending = total - completed;
+
+        const ctx = document.getElementById('statsChart');
+        let chartInstance = null;
+
+        if (ctx) {
+           chartInstance = new Chart(ctx, {
+             type: 'doughnut',
+             data: {
+               labels: ['Completadas', 'Pendientes'],
+               datasets: [{
+                 data: [completed, pending],
+                 backgroundColor: ['#58cc02', isDarkMode ? '#334155' : '#e2e8f0'],
+                 borderWidth: 3,
+                 hoverOffset: 4
+               }]
+             },
+             options: { 
+               responsive: true, 
+               maintainAspectRatio: false,
+               plugins: {
+                 legend: { position: 'bottom', labels: { color: isDarkMode ? '#f8fafc' : '#1e293b', font: { family: 'Outfit', weight: 'bold' } } }
+               }
+             }
+           });
+        }
+        return () => {
+          if (chartInstance) chartInstance.destroy();
+        };
+      }, [nodeProgress, isDarkMode]);
+
+      const leagues = [
+        { name: "Liga Gramático", min: 0, max: 500, color: "text-amber-700 dark:text-amber-400", border: "border-amber-400", bg: "bg-amber-100 dark:bg-amber-950/50", icon: "fa-feather" },
+        { name: "Liga Poeta", min: 500, max: 1500, color: "text-slate-600 dark:text-slate-300", border: "border-slate-400", bg: "bg-slate-200 dark:bg-slate-800", icon: "fa-scroll" },
+        { name: "Liga Retórico", min: 1500, max: 3000, color: "text-yellow-600 dark:text-yellow-400", border: "border-yellow-400", bg: "bg-yellow-100 dark:bg-yellow-950/50", icon: "fa-book-bookmark" },
+        { name: "Liga Académico", min: 3000, max: Infinity, color: "text-cyan-600 dark:text-cyan-400", border: "border-cyan-400", bg: "bg-cyan-100 dark:bg-cyan-950/50", icon: "fa-graduation-cap" }
+      ];
+
+      let currentLeagueIndex = leagues.findIndex(l => xp >= l.min && xp < l.max);
+      if (currentLeagueIndex === -1) currentLeagueIndex = leagues.length - 1;
+      const currentLeague = leagues[currentLeagueIndex];
+      const nextLeague = leagues[currentLeagueIndex + 1];
+      const progressPerc = nextLeague ? Math.min(100, Math.max(0, ((xp - currentLeague.min) / (nextLeague.min - currentLeague.min)) * 100)) : 100;
+
+      return (
+        <div className="max-w-4xl mx-auto space-y-8 pb-10">
+          <div className="flex items-center justify-between">
+            <button onClick={() => setCurrentView('path')} className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full font-bold text-2xl transition-colors">
+              <i className="fa-solid fa-arrow-left"></i>
+            </button>
+            <h2 className="text-3xl font-display font-black text-slate-800 dark:text-white">Mi Perfil Lingüístico</h2>
+            <button onClick={toggleDarkMode} className="w-12 h-12 flex items-center justify-center text-amber-500 dark:text-yellow-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full font-bold text-2xl transition-colors">
+              <i className={`fa-solid ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-slate-900 rounded-[32px] p-6 sm:p-8 shadow-duo-card border-[3px] border-slate-200 dark:border-slate-800 space-y-6 transition-colors">
+              <div className="flex items-center gap-4 border-b-2 border-slate-100 dark:border-slate-800 pb-6">
+                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-4xl text-duoBlue border-4 border-slate-200 dark:border-slate-700">
+                  <i className="fa-solid fa-user-ninja"></i>
+                </div>
+                <div>
+                  <h3 className="font-display font-black text-2xl text-slate-800 dark:text-white">Estudiante de Lengua</h3>
+                  <p className="text-slate-500 dark:text-slate-400 font-bold text-sm mt-1">Explorador del Lenguaje (PRO)</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-[20px] border-2 border-slate-200 dark:border-slate-700 flex flex-col">
+                  <i className="fa-solid fa-fire text-duoOrange text-2xl mb-2"></i>
+                  <span className="font-display font-black text-xl text-slate-800 dark:text-white">{streak} Días</span>
+                  <span className="text-xs text-slate-400 font-bold">Racha de estudio</span>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-[20px] border-2 border-slate-200 dark:border-slate-700 flex flex-col">
+                  <i className="fa-solid fa-bolt text-duoBlue text-2xl mb-2"></i>
+                  <span className="font-display font-black text-xl text-slate-800 dark:text-white">{xp} XP</span>
+                  <span className="text-xs text-slate-400 font-bold">Experiencia total</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-[32px] p-6 sm:p-8 shadow-duo-card border-[3px] border-slate-200 dark:border-slate-800 space-y-4 transition-colors">
+              <h3 className="font-display font-black text-xl text-slate-800 dark:text-white border-b-2 border-slate-100 dark:border-slate-800 pb-4">Progreso del Temario</h3>
+              <div className="relative w-full h-[200px]">
+                <canvas id="statsChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-b from-white to-blue-50 dark:from-slate-900 dark:to-slate-800/80 rounded-[32px] p-6 sm:p-8 shadow-duo-card border-[3px] border-blue-200 dark:border-blue-900/50 space-y-6 transition-colors">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b-2 border-blue-100 dark:border-slate-700 pb-4 gap-4">
+              <h3 className="font-display font-black text-2xl text-blue-900 dark:text-blue-300 flex items-center gap-3">
+                <i className="fa-solid fa-trophy text-blue-500 text-3xl"></i>
+                Ligas de Clasificación
+              </h3>
+            </div>
+            
+            <div className="flex items-center gap-6">
+              <div className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl shadow-sm border-4 shrink-0 ${currentLeague.bg} ${currentLeague.color} ${currentLeague.border}`}>
+                <i className={`fa-solid ${currentLeague.icon}`}></i>
+              </div>
+              <div className="flex-1 w-full space-y-2">
+                <h4 className="font-display font-black text-slate-800 dark:text-white text-2xl">{currentLeague.name}</h4>
+                {nextLeague && (
+                  <>
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                      {xp} XP / {nextLeague.min} XP para {nextLeague.name}
+                    </p>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-4 rounded-full overflow-hidden border-2 border-slate-300 dark:border-slate-600">
+                      <div className="bg-duoBlue h-full transition-all duration-500 rounded-full" style={{ width: `${progressPerc}%` }}></div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 dark:bg-slate-900 rounded-[32px] p-6 sm:p-8 border-2 border-slate-200 dark:border-slate-800 space-y-4 transition-colors">
+            <div className="text-center pb-2">
+              <h3 className="font-display font-black text-lg text-slate-800 dark:text-white">Copia de Seguridad de Progreso</h3>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+              <button onClick={handleExport} className="bg-white dark:bg-slate-800 text-duoBlueDark dark:text-duoBlue font-display font-black py-4 px-6 rounded-[20px] shadow-sm border-[3px] border-slate-200 dark:border-slate-700 border-b-[6px] duo-pressable flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700">
+                <i className="fa-solid fa-download"></i> Exportar
+              </button>
+              
+              <input type="file" accept=".txt,.json" ref={fileInputRef} onChange={handleImport} className="hidden" />
+              <button onClick={() => fileInputRef.current.click()} className="bg-white dark:bg-slate-800 text-duoEmeraldDark dark:text-duoEmerald font-display font-black py-4 px-6 rounded-[20px] shadow-sm border-[3px] border-slate-200 dark:border-slate-700 border-b-[6px] duo-pressable flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700">
+                <i className="fa-solid fa-upload"></i> Importar
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- MAPA RUTA DE APRENDIZAJE ---
+    function PathMap({ selectedChapter, setSelectedChapter, nodeProgress, setCurrentView }) {
+      const CHAPTER_DATA = window.QuestionBank.CHAPTER_DATA;
+      const chapter = CHAPTER_DATA[selectedChapter];
+
+      const nodes = [
+        { key: 'timeline', name: 'Ordenador Sintáctico', icon: 'fa-align-left', color: 'bg-duoGreen', shadow: 'shadow-btn-green' },
+        { key: 'kahoot', name: 'Preguntas Flash', icon: 'fa-bolt', color: 'bg-duoOrange', shadow: 'shadow-btn-orange' },
+        { key: 'xafarderia', name: 'Analizador de Papeles', icon: 'fa-sitemap', color: 'bg-duoBlue', shadow: 'shadow-btn-blue' },
+        { key: 'boe', name: 'Clasificador de Textos', icon: 'fa-quote-left', color: 'bg-duoPurple', shadow: 'shadow-btn-purple' },
+        { key: 'conecta', name: 'Conecta Conceptos', icon: 'fa-link', color: 'bg-duoRed', shadow: 'shadow-btn-red' },
+        { key: 'veritat', name: '¿Verdad o Mito?', icon: 'fa-circle-check', color: 'bg-duoYellow', shadow: 'shadow-btn-yellow' },
+        { key: 'motPerdut', name: 'El Hueco Perdido', icon: 'fa-pen-clip', color: 'bg-duoEmerald', shadow: 'shadow-btn-emerald' },
+      ];
+
+      return (
+        <div className="space-y-8 pb-16">
+          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-none px-2">
+            {Object.values(CHAPTER_DATA).map(chap => {
+              const isActive = chap.id === selectedChapter;
+              return (
+                <button
+                  key={chap.id}
+                  onClick={() => {
+                    playSound('pop');
+                    setSelectedChapter(chap.id);
+                  }}
+                  className={`flex-1 min-w-[200px] p-4 rounded-[24px] border-b-[6px] border-2 font-display font-black text-left transition-all active:translate-y-1 active:border-b-2 ${
+                    isActive 
+                      ? `${chap.color} text-white shadow-duo-3d border-black/20 scale-[1.02]` 
+                      : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs opacity-90 uppercase mb-2 font-bold tracking-wider">
+                    <span>TEMA {chap.id}</span>
+                  </div>
+                  <div className="text-base line-clamp-1">{chap.title.split(': ')[1] || chap.title}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className={`${chapter.color} text-white p-8 rounded-[32px] shadow-duo-3d border-b-[8px] border-2 border-black/20 relative overflow-hidden`}>
+            <div className="relative z-10 max-w-xl space-y-3">
+              <span className="bg-white/20 backdrop-blur-md px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest border border-white/30">
+                Unidad {chapter.id}
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-display font-black leading-tight drop-shadow-md">
+                {chapter.title}
+              </h2>
+              <p className="text-white/90 text-base font-bold">
+                {chapter.desc}
+              </p>
+            </div>
+            <i className="fa-solid fa-book-open absolute -right-6 -bottom-10 text-[180px] opacity-15 pointer-events-none transform -rotate-12"></i>
+          </div>
+
+          <div className="relative py-8 flex flex-col items-center space-y-12 w-full max-w-md mx-auto">
+            <div className="absolute top-8 bottom-24 left-1/2 w-8 bg-slate-200 dark:bg-slate-800 -translate-x-1/2 rounded-full z-0 border-x-[3px] border-slate-300 dark:border-slate-700 opacity-60"></div>
+
+            {nodes.map((node, index) => {
+              const progressKey = `c${selectedChapter}_${node.key}`;
+              const stars = nodeProgress[progressKey] || 0;
+              const offsetClass = index % 2 === 0 ? '-translate-x-16 sm:-translate-x-24' : 'translate-x-16 sm:translate-x-24';
+              const isCompleted = stars > 0;
+              const activeColor = isCompleted ? 'bg-amber-400 shadow-btn-yellow border-amber-500 text-amber-900' : `${node.color} ${node.shadow} text-white border-black/20`;
+
+              return (
+                <div key={node.key} className={`relative flex flex-col items-center ${offsetClass} z-10`}>
+                  <button
+                    onClick={() => { playSound('pop'); setCurrentView(node.key); }}
+                    className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full ${activeColor} flex flex-col items-center justify-center text-3xl sm:text-4xl font-black transition-transform hover:scale-110 active:scale-95 border-b-[8px] border-2 relative group shadow-lg`}
+                  >
+                    <i className={`fa-solid ${isCompleted ? 'fa-check text-4xl' : node.icon}`}></i>
+                    {stars > 0 && (
+                      <div className="absolute -top-4 bg-white dark:bg-slate-800 text-amber-500 border-4 border-amber-400 text-sm px-3 py-1 rounded-full font-black flex items-center gap-1.5 shadow-md transform rotate-6 animate-float-duo">
+                        <i className="fa-solid fa-crown text-xs"></i>
+                        <span>{stars}</span>
+                      </div>
+                    )}
+                  </button>
+
+                  <div className="absolute -bottom-8 w-[160px] text-center">
+                    <span className="font-display font-black text-sm text-slate-500 dark:text-slate-400">
+                      {node.name}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+
+            <div className="relative flex flex-col items-center pt-16 z-10">
+              <button
+                onClick={() => { playSound('pop'); setCurrentView('extraKahoot'); }}
+                className="w-32 h-32 sm:w-36 sm:h-36 rounded-full bg-gradient-to-br from-amber-400 via-duoOrange to-duoRed shadow-btn-red text-white flex flex-col items-center justify-center text-5xl font-black transition-transform hover:scale-110 active:scale-95 border-b-[10px] border-4 border-amber-200 relative group animate-float-duo"
+              >
+                <i className="fa-solid fa-graduation-cap text-amber-100 mb-1"></i>
+                <span className="text-[11px] font-black uppercase tracking-wider bg-black/40 px-3 py-1 rounded-full border border-white/30">
+                  EXAMEN
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- TIENDA ---
+    function ShopView({ gems, setGems, hearts, setHearts, inventory, setInventory, setCurrentView }) {
+      const shopItems = [
+        {
+          id: 'hearts',
+          title: 'Poción de Vidas (+2 ❤️)',
+          desc: 'Restaura inmediatamente 2 vidas para continuar aprendiendo.',
+          price: 25,
+          icon: 'fa-heart-circle-plus',
+          color: 'bg-duoRed text-white',
+          btnColor: 'bg-duoRed shadow-btn-red hover:bg-duoRedDark',
+          disabled: hearts >= 5 || gems < 25,
+          disabledText: hearts >= 5 ? 'Vidas al Máximo' : 'Gemas Insuficientes',
+          onBuy: () => {
+            setGems(g => g - 25);
+            setHearts(h => Math.min(5, h + 2));
+            playSound('heal');
+          }
+        },
+        {
+          id: 'fiftyFifty',
+          title: 'Comodín 50/50',
+          desc: 'Descarta 2 opciones incorrectas en las preguntas de opción múltiple.',
+          price: 30,
+          icon: 'fa-wand-magic-sparkles',
+          color: 'bg-duoYellow text-slate-900',
+          btnColor: 'bg-duoYellow shadow-btn-yellow hover:bg-duoYellowDark text-slate-900',
+          disabled: gems < 30,
+          disabledText: 'Gemas Insuficientes',
+          ownedText: `Tienes: ${inventory.fiftyFifty}`,
+          onBuy: () => {
+            setGems(g => g - 30);
+            setInventory(prev => ({ ...prev, fiftyFifty: prev.fiftyFifty + 1 }));
+            playSound('gemGain');
+          }
+        },
+        {
+          id: 'doubleXp',
+          title: 'Multiplicador 2x XP',
+          desc: 'Duplica los puntos de experiencia en tu próxima respuesta correcta.',
+          price: 35,
+          icon: 'fa-bolt-lightning',
+          color: 'bg-duoBlue text-white',
+          btnColor: 'bg-duoBlue shadow-btn-blue hover:bg-duoBlueDark',
+          disabled: inventory.doubleXp || gems < 35,
+          disabledText: inventory.doubleXp ? '¡Ya Activo!' : 'Gemas Insuficientes',
+          onBuy: () => {
+            setGems(g => g - 35);
+            setInventory(prev => ({ ...prev, doubleXp: true }));
+            playSound('gemGain');
+          }
+        },
+        {
+          id: 'shield',
+          title: 'Escudo Gramatical',
+          desc: 'Protege tu vida. El primer error que cometas no te restará vidas.',
+          price: 40,
+          icon: 'fa-shield-halved',
+          color: 'bg-duoPurple text-white',
+          btnColor: 'bg-duoPurple shadow-btn-purple hover:bg-duoPurpleDark',
+          disabled: gems < 40,
+          disabledText: 'Gemas Insuficientes',
+          ownedText: `Tienes: ${inventory.shield}`,
+          onBuy: () => {
+            setGems(g => g - 40);
+            setInventory(prev => ({ ...prev, shield: prev.shield + 1 }));
+            playSound('gemGain');
+          }
+        }
+      ];
+
+      return (
+        <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 rounded-[32px] p-6 sm:p-10 shadow-duo-card border-[3px] border-slate-200 dark:border-slate-800 space-y-8 transition-colors">
+          <div className="flex items-center justify-between">
+            <button onClick={() => setCurrentView('path')} className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full font-bold text-2xl transition-colors">
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+            <span className="bg-emerald-100 dark:bg-emerald-950/60 text-duoEmeraldDark dark:text-duoEmerald border-2 border-emerald-200 dark:border-emerald-800 text-sm font-black px-4 py-2 rounded-2xl shadow-sm flex items-center gap-2">
+              <i className="fa-solid fa-gem text-amber-400 text-lg"></i>
+              {gems} Gemas
+            </span>
+          </div>
+
+          <div className="text-center space-y-4">
+            <div className="w-24 h-24 bg-amber-100 dark:bg-amber-950/50 text-amber-500 rounded-[28px] flex items-center justify-center text-5xl mx-auto border-[4px] border-amber-200 dark:border-amber-800 shadow-sm animate-float-duo">
+              <i className="fa-solid fa-store"></i>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-display font-black text-slate-800 dark:text-white">
+              Tienda de Ventajas
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {shopItems.map(item => (
+              <div key={item.id} className="bg-white dark:bg-slate-800/80 border-[3px] border-slate-200 dark:border-slate-700 rounded-[24px] p-5 flex flex-col justify-between space-y-5 hover:border-slate-300 transition-colors shadow-sm">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-14 h-14 rounded-[20px] ${item.color} flex items-center justify-center text-2xl font-black shadow-sm border-2 border-black/10`}>
+                      <i className={`fa-solid ${item.icon}`}></i>
+                    </div>
+                    {item.ownedText && (
+                      <span className="text-xs font-black bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-xl">
+                        {item.ownedText}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-display font-black text-slate-800 dark:text-white text-xl">{item.title}</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-bold leading-relaxed">{item.desc}</p>
+                </div>
+
+                <button
+                  disabled={item.disabled}
+                  onClick={() => { playSound('pop'); item.onBuy(); }}
+                  className={`w-full font-display font-black text-base py-4 rounded-[20px] transition-transform duo-pressable border-b-[6px] border-x-2 border-t-2 flex items-center justify-center gap-2 ${
+                    item.disabled 
+                      ? 'bg-slate-100 dark:bg-slate-700 text-slate-400 border-slate-200 shadow-none' 
+                      : `${item.btnColor} border-black/10`
+                  }`}
+                >
+                  {item.disabled ? (
+                    <span>{item.disabledText}</span>
+                  ) : (
+                    <>
+                      <span>{item.price}</span>
+                      <i className="fa-solid fa-gem text-amber-200 text-lg"></i>
+                    </>
+                  )}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    const GameHeader = ({ setCurrentView, currentProgress = 50 }) => (
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={() => setCurrentView('path')} 
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-2xl font-black transition-transform hover:scale-110 active:scale-95"
+        >
+          <i className="fa-solid fa-xmark"></i>
+        </button>
+        <div className="flex-1 bg-slate-200 dark:bg-slate-700 h-4 rounded-full overflow-hidden border-2 border-slate-300 dark:border-slate-600">
+          <div 
+            className="bg-duoGreen h-full transition-all duration-500 rounded-full"
+            style={{ width: `${currentProgress}%` }}
+          ></div>
+        </div>
+      </div>
+    );
+
+    // --- GAME 1: ORDENADOR SINTÁCTICO (PRO MULTI-MODEL) ---
+    function GameTimeline({ chapter, setCurrentView, onSuccess, onError, onFinish }) {
+      const [data, setData] = useState(null);
+      const [items, setItems] = useState([]);
+      const [pool, setPool] = useState([]);
+      const [timeline, setTimeline] = useState([]);
+      const [selectedIdx, setSelectedIdx] = useState(null);
+
+      useEffect(() => {
+        const tData = window.QuestionBank.getTimeline(chapter.id);
+        if (tData && tData.elements) {
+          setData(tData);
+          const shuffled = [...tData.elements].sort(() => Math.random() - 0.5);
+          setItems(shuffled);
+          setPool(shuffled);
+          setTimeline([]);
+          setSelectedIdx(null);
+        }
+      }, [chapter.id]);
+
+      if (!data) return null;
+
+      // Modelos: 'vertical', 'horizontal', 'swap', 'build' (configurado desde questions.js)
+      const modelType = data.modelType || 'vertical'; 
+
+      const moveItem = (from, to) => {
+        playSound('pop');
+        const updated = [...items];
+        const [moved] = updated.splice(from, 1);
+        updated.splice(to, 0, moved);
+        setItems(updated);
+      };
+
+      const handleSwapClick = (idx) => {
+        playSound('pop');
+        if (selectedIdx === null) {
+          setSelectedIdx(idx);
+        } else {
+          if (selectedIdx !== idx) {
+            const updated = [...items];
+            const temp = updated[selectedIdx];
+            updated[selectedIdx] = updated[idx];
+            updated[idx] = temp;
+            setItems(updated);
+          }
+          setSelectedIdx(null);
+        }
+      };
+
+      const addToTimeline = (item) => {
+        playSound('pop');
+        setPool(pool.filter(i => i.id !== item.id));
+        setTimeline([...timeline, item]);
+      };
+
+      const removeFromTimeline = (item) => {
+        playSound('pop');
+        setTimeline(timeline.filter(i => i.id !== item.id));
+        setPool([...pool, item]);
+      };
+
+      const checkOrder = () => {
+        let currentItems = modelType === 'build' ? timeline : items;
+        let isCorrect = true;
+
+        if (modelType === 'build' && currentItems.length !== data.elements.length) {
+          onError("SECUENCIA INCOMPLETA", "Debes usar todos los bloques de la reserva.", data.exp);
+          return;
+        }
+
+        for (let i = 0; i < currentItems.length; i++) {
+          if (currentItems[i].order !== i + 1) {
+            isCorrect = false;
+            break;
+          }
+        }
+
+        if (isCorrect) {
+          onSuccess("¡ORDEN PERFECTO!", "Has estructurado la secuencia correctamente.", data.exp, 30, (totalXp) => {
+            onFinish(3, totalXp, 'Ordenador Sintáctico');
+          });
+        } else {
+          onError("ESTRUCTURA INCORRECTA", "Revisa el orden de los elementos gramaticales.", data.exp);
+        }
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6 pt-4">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={20} />
+          <div className="space-y-2 text-center pb-4">
+            <h2 className="text-3xl font-display font-black text-slate-800 dark:text-white">
+              Sigue Las Instrucciones:
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 text-base font-bold">
+              {data.exp}
+            </p>
+          </div>
+
+         {/* MODELO 1: VERTICAL CLÁSICO */}
+          {modelType === 'vertical' && (
+            <div className="space-y-4">
+              {items.map((item, idx) => (
+                <motion.div 
+                  key={item.id} layout
+                  className="bg-white dark:bg-slate-800 border-[3px] border-slate-200 dark:border-slate-700 border-b-[6px] rounded-[24px] p-5 flex items-center justify-between gap-4 shadow-sm hover:border-duoGreen transition-colors"
+                  // AQUÍ ESTÁ LA MAGIA: Aplica el color del JS si existe
+                  style={item.color ? { backgroundColor: item.color, borderColor: item.color } : {}}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-[18px] bg-emerald-100 dark:bg-emerald-950/60 text-duoGreen border-2 border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-xl font-black shrink-0">
+                      {idx + 1}
+                    </div>
+                    {/* Forzamos el texto a blanco si el bloque tiene color para que contraste bien */}
+                    <h4 
+                      className="font-display font-black text-slate-800 dark:text-white text-lg"
+                      style={item.color ? { color: '#ffffff' } : {}}
+                    >
+                      {item.text}
+                    </h4>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button disabled={idx === 0} onClick={() => moveItem(idx, idx - 1)} className="w-10 h-10 rounded-[14px] bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 hover:bg-duoGreen hover:text-white disabled:opacity-30 flex items-center justify-center font-bold text-lg transition-colors active:scale-95">
+                      <i className="fa-solid fa-chevron-up"></i>
+                    </button>
+                    <button disabled={idx === items.length - 1} onClick={() => moveItem(idx, idx + 1)} className="w-10 h-10 rounded-[14px] bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 hover:bg-duoGreen hover:text-white disabled:opacity-30 flex items-center justify-center font-bold text-lg transition-colors active:scale-95">
+                      <i className="fa-solid fa-chevron-down"></i>
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )},
+          ),
+
+          {/* MODELO 2: HORIZONTAL */}
+          {modelType === 'horizontal' && (
+            <div className="flex flex-wrap gap-4 justify-center bg-slate-50 dark:bg-slate-900 p-6 rounded-[32px] border-4 border-slate-200 dark:border-slate-800">
+              {items.map((item, idx) => (
+                <motion.div 
+                  key={item.id} layout
+                  className="bg-white dark:bg-slate-800 border-[3px] border-slate-200 dark:border-slate-700 border-b-[6px] rounded-[20px] p-4 flex flex-col items-center gap-3 shadow-sm"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-100 text-duoBlue border-2 border-blue-200 flex items-center justify-center text-sm font-black">
+                    {idx + 1}
+                  </div>
+                  <h4 className="font-display font-black text-slate-800 dark:text-white text-md text-center px-2">{item.text}</h4>
+                  <div className="flex gap-2 w-full justify-center mt-2">
+                    <button disabled={idx === 0} onClick={() => moveItem(idx, idx - 1)} className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-slate-700 hover:bg-duoBlue hover:text-white disabled:opacity-30 flex items-center justify-center transition-colors"><i className="fa-solid fa-chevron-left"></i></button>
+                    <button disabled={idx === items.length - 1} onClick={() => moveItem(idx, idx + 1)} className="w-10 h-10 rounded-[12px] bg-slate-100 dark:bg-slate-700 hover:bg-duoBlue hover:text-white disabled:opacity-30 flex items-center justify-center transition-colors"><i className="fa-solid fa-chevron-right"></i></button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* MODELO 3: INTERCAMBIO (SWAP) */}
+          {modelType === 'swap' && (
+            <div className="grid grid-cols-2 gap-4">
+              {items.map((item, idx) => {
+                const isSelected = selectedIdx === idx;
+                return (
+                  <motion.button 
+                    key={item.id} layout
+                    onClick={() => handleSwapClick(idx)}
+                    className={`p-6 rounded-[24px] font-display font-black text-lg text-center border-2 border-b-[6px] transition-all duo-pressable ${
+                      isSelected 
+                        ? 'bg-amber-100 dark:bg-amber-900 border-amber-400 text-amber-700 dark:text-amber-200 scale-105 shadow-btn-yellow' 
+                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:border-amber-300'
+                    }`}
+                  >
+                    <div className="text-xs text-slate-400 mb-2 uppercase tracking-wider">Posición {idx + 1}</div>
+                    {item.text}
+                  </motion.button>
+                )
+              })}
+            </div>
+          )}
+
+          {/* MODELO 4: CONSTRUCTOR (BUILD) */}
+          {modelType === 'build' && (
+            <div className="space-y-6">
+              <div className="min-h-[140px] bg-slate-100 dark:bg-slate-900 border-4 border-dashed border-slate-300 dark:border-slate-700 rounded-[32px] p-6 flex flex-wrap gap-3 items-center justify-center transition-colors">
+                {timeline.length === 0 && <span className="text-slate-400 font-bold text-center">Haz clic en la reserva para añadir elementos aquí</span>}
+                {timeline.map((item, idx) => (
+                  <motion.button key={item.id} layout onClick={() => removeFromTimeline(item)} className="bg-duoBlue text-white font-display font-black px-4 py-3 rounded-[16px] border-b-[6px] border-2 border-black/20 hover:bg-duoBlueDark active:scale-95 transition-transform flex items-center gap-3 shadow-btn-blue">
+                    <span className="bg-white/20 px-2 py-0.5 rounded-md text-sm">{idx + 1}</span>
+                    {item.text}
+                  </motion.button>
+                ))}
+              </div>
+              <div className="bg-white dark:bg-slate-800 border-[3px] border-slate-200 dark:border-slate-700 rounded-[24px] p-6 shadow-sm">
+                <h4 className="text-sm font-black text-slate-400 uppercase tracking-wider mb-4 text-center">Reserva de bloques</h4>
+                <div className="flex flex-wrap justify-center gap-3">
+                  {pool.map((item) => (
+                    <motion.button key={item.id} layout onClick={() => addToTimeline(item)} className="bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-white font-display font-black px-5 py-3 rounded-[16px] border-2 border-b-4 border-slate-300 dark:border-slate-600 hover:border-duoBlue hover:text-duoBlue active:scale-95 transition-all">
+                      {item.text}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-6">
+            <button
+              onClick={checkOrder}
+              className="w-full bg-duoGreen border-x-2 border-t-2 border-b-[6px] border-black/10 text-white font-display font-black text-xl py-4 rounded-[24px] shadow-btn-green duo-pressable uppercase tracking-wider"
+            >
+              Comprobar
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // --- GAME 2: PREGUNTAS FLASH ---
+    function GameKahoot({ chapter, setCurrentView, onSuccess, onError, onFinish, inventory, setInventory }) {
+      const [questions, setQuestions] = useState([]);
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [sliderVal, setSliderVal] = useState(1);
+      const [multiSelected, setMultiSelected] = useState([]);
+      const [disabledOptions, setDisabledOptions] = useState([]);
+      const [accumulatedXp, setAccumulatedXp] = useState(0);
+
+      useEffect(() => {
+        const qList = window.QuestionBank.getKahoot(chapter.id, 3);
+        setQuestions(qList);
+        setDisabledOptions([]);
+        setAccumulatedXp(0);
+        if (qList.length > 0 && qList[0].type === 'slider') {
+          setSliderVal(qList[0].minVal || 1);
+        }
+      }, [chapter.id]);
+
+      if (questions.length === 0) return null;
+
+      const q = questions[currentIndex];
+      const progress = ((currentIndex) / questions.length) * 100;
+
+      const handleClassicAnswer = (option) => {
+        if (option.correct) {
+          onSuccess("¡RESPUESTA CORRECTA!", "¡Has identificado la opción exacta!", q.exp, 20, (xpGained) => {
+            setAccumulatedXp(prev => prev + xpGained);
+            nextQuestion();
+          });
+        } else {
+          onError("RESPUESTA INCORRECTA", "Aún puedes repasar el concepto.", q.exp);
+        }
+      };
+
+      const handleSliderSubmit = () => {
+        if (sliderVal === q.targetVal) {
+          onSuccess("¡CONTEO EXACTO!", `En efecto, el número correcto es ${q.targetVal}.`, q.exp, 25, (xpGained) => {
+            setAccumulatedXp(prev => prev + xpGained);
+            nextQuestion();
+          });
+        } else {
+          onError("CONTEO INCORRECTO", `El resultado correcto era ${q.targetVal}.`, q.exp);
+        }
+      };
+
+      const handleMultiSubmit = () => {
+        const correctIds = q.options.filter(o => o.correct).map(o => o.id);
+        const isExact = correctIds.length === multiSelected.length && correctIds.every(id => multiSelected.includes(id));
+
+        if (isExact) {
+          onSuccess("¡SELECCIÓN PERFECTA!", "Has marcado todas las opciones válidas.", q.exp, 30, (xpGained) => {
+             setAccumulatedXp(prev => prev + xpGained);
+             nextQuestion();
+          });
+        } else {
+          onError("SELECCIÓN INCOMPLETA O INCORRECTA", "Revisa las características seleccionadas.", q.exp);
+        }
+      };
+
+      const nextQuestion = () => {
+        setDisabledOptions([]);
+        if (currentIndex + 1 < questions.length) {
+          setCurrentIndex(c => c + 1);
+          setMultiSelected([]);
+          const nextQ = questions[currentIndex + 1];
+          if (nextQ && nextQ.type === 'slider') {
+            setSliderVal(nextQ.minVal || 1);
+          }
+        } else {
+          onFinish(3, accumulatedXp, 'Preguntas Flash');
+        }
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6 pt-4">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={progress || 10} />
+
+          <h2 className="text-2xl sm:text-3xl font-display font-black text-slate-800 dark:text-white leading-tight">
+            {q.question}
+          </h2>
+
+          {q.type === 'classic' && (
+            <div className="space-y-4 pt-4">
+              {inventory && inventory.fiftyFifty > 0 && disabledOptions.length === 0 && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      playSound('pop');
+                      const incorrectIndexes = q.options
+                        .map((opt, i) => opt.correct ? null : i)
+                        .filter(val => val !== null);
+                      const shuffled = [...incorrectIndexes].sort(() => Math.random() - 0.5);
+                      setDisabledOptions(shuffled.slice(0, 2));
+                      setInventory(prev => ({ ...prev, fiftyFifty: prev.fiftyFifty - 1 }));
+                    }}
+                    className="bg-amber-400 text-amber-900 font-display font-black text-sm px-4 py-2 rounded-xl border-b-4 border-amber-500 flex items-center gap-2"
+                  >
+                    <i className="fa-solid fa-wand-magic-sparkles"></i> Usar 50/50 ({inventory.fiftyFifty})
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-1 gap-4">
+                {q.options.map((opt, i) => {
+                  if (disabledOptions.includes(i)) {
+                    return (
+                      <div key={i} className="p-5 rounded-[20px] font-display font-bold text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800 border-[3px] border-slate-200 dark:border-slate-700 line-through">
+                        {opt.text}
+                      </div>
+                    );
+                  }
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => handleClassicAnswer(opt)}
+                      className="p-5 rounded-[20px] font-display font-black text-left text-lg bg-white dark:bg-slate-800 border-2 border-b-[6px] border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 duo-pressable"
+                    >
+                      {opt.text}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {q.type === 'slider' && (
+            <div className="space-y-8 text-center py-8">
+              <div className="text-6xl font-display font-black text-duoOrange drop-shadow-md">
+                {sliderVal}
+              </div>
+              <input 
+                type="range" 
+                min={q.minVal} 
+                max={q.maxVal} 
+                value={sliderVal} 
+                onChange={(e) => setSliderVal(parseInt(e.target.value))}
+                className="w-full h-4 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-duoOrange border-2 border-slate-300 dark:border-slate-600"
+              />
+              <button
+                onClick={handleSliderSubmit}
+                className="w-full bg-duoOrange text-white font-display font-black text-xl py-4 rounded-[24px] border-x-2 border-t-2 border-b-[6px] border-black/10 shadow-btn-orange duo-pressable mt-8"
+              >
+                Comprobar
+              </button>
+            </div>
+          )}
+
+          {q.type === 'multi' && (
+            <div className="space-y-6 pt-4">
+              <div className="grid grid-cols-1 gap-4">
+                {q.options.map((opt) => {
+                  const isSel = multiSelected.includes(opt.id);
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        playSound('pop');
+                        setMultiSelected(prev => isSel ? prev.filter(x => x !== opt.id) : [...prev, opt.id]);
+                      }}
+                      className={`p-5 rounded-[20px] font-display font-black text-left text-lg border-2 border-b-[6px] transition-all flex items-center justify-between ${
+                        isSel ? 'bg-orange-50 dark:bg-orange-950/40 border-duoOrange text-duoOrange' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white'
+                      }`}
+                    >
+                      <span>{opt.text}</span>
+                      <i className={`fa-solid text-2xl ${isSel ? 'fa-square-check text-duoOrange' : 'fa-square text-slate-300'}`}></i>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={handleMultiSubmit}
+                className="w-full bg-duoOrange text-white font-display font-black text-xl py-4 rounded-[24px] shadow-btn-orange border-x-2 border-t-2 border-b-[6px] border-black/10 duo-pressable"
+              >
+                Confirmar
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // --- GAME EXTRA EXAMEN ---
+    function GameExtraKahoot(props) {
+      return <GameKahoot {...props} />;
+    }
+
+    // --- GAME 3: ANALIZADOR DE PAPELES / SINTAXIS ---
+    function GameXafarderia({ chapter, setCurrentView, onSuccess, onError, onFinish }) {
+      const [data, setData] = useState(null);
+      const [assigned, setAssigned] = useState({});
+
+      useEffect(() => {
+        setData(window.QuestionBank.getXafarderia(chapter.id));
+        setAssigned({});
+      }, [chapter.id]);
+
+      if (!data) return null;
+
+      const handleAssign = (slotId, val) => {
+        playSound('pop');
+        setAssigned(prev => ({ ...prev, [slotId]: val }));
+      };
+
+      const validate = () => {
+        let allCorrect = true;
+        data.slots.forEach(slot => {
+          if (assigned[slot.id] !== slot.correct) allCorrect = false;
+        });
+
+        if (allCorrect && Object.keys(assigned).length === data.slots.length) {
+          onSuccess("¡ANÁLISIS PERFECTO!", "Has asignado cada función o papel temático en su lugar exacto.", data.exp, 35, (totalXp) => {
+            onFinish(3, totalXp, 'Analizador de Papeles');
+          });
+        } else {
+          onError("ANÁLISIS INCORRECTO", "Revisa la relación entre los elementos de la oración.", data.exp);
+        }
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6 pt-4">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={35} />
+
+          <div className="text-center space-y-4">
+            <span className={`inline-block px-5 py-2 rounded-full text-white font-display font-black text-sm uppercase tracking-widest border-2 border-black/10 shadow-sm ${data.color}`}>
+              {data.centerRole}
+            </span>
+            <h2 className="text-3xl font-display font-black text-slate-800 dark:text-white">
+              {data.title}
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400 text-base font-bold max-w-md mx-auto">
+              {data.desc}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-4">
+            {data.slots.map(slot => (
+              <div key={slot.id} className="bg-white dark:bg-slate-800 border-[3px] border-b-[6px] border-slate-200 dark:border-slate-700 rounded-[24px] p-5 space-y-3">
+                <div className="flex items-center gap-3 text-duoBlue font-display font-black text-sm uppercase tracking-wider">
+                  <div className="w-10 h-10 bg-sky-100 dark:bg-sky-950/60 rounded-full flex items-center justify-center text-xl border-2 border-sky-200 dark:border-sky-800">
+                    <i className={`fa-solid ${slot.icon}`}></i>
+                  </div>
+                  <span>{slot.label}</span>
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">{slot.relation}</p>
+                <select
+                  value={assigned[slot.id] || ""}
+                  onChange={(e) => handleAssign(slot.id, e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-900 border-2 border-slate-300 dark:border-slate-700 rounded-[16px] p-3 font-display font-black text-base text-slate-800 dark:text-white outline-none cursor-pointer"
+                >
+                  <option value="">-- Elige la opción --</option>
+                  {data.chars.map((c, i) => (
+                    <option key={i} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-6">
+            <button
+              onClick={validate}
+              className="w-full bg-duoBlue hover:bg-duoBlueDark text-white font-display font-black text-xl py-4 rounded-[24px] border-x-2 border-t-2 border-b-[6px] border-black/10 shadow-btn-blue duo-pressable"
+            >
+              Comprobar Análisis
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // --- GAME 4: CLASIFICADOR DE TEXTOS / FIGURAS ---
+    function GameBOE({ chapter, setCurrentView, onSuccess, onError, onFinish }) {
+      const [docs, setDocs] = useState([]);
+      const [idx, setIdx] = useState(0);
+      const [accumulatedXp, setAccumulatedXp] = useState(0);
+
+      useEffect(() => {
+        setDocs(window.QuestionBank.getBOE(chapter.id, 2));
+        setIdx(0);
+        setAccumulatedXp(0);
+      }, [chapter.id]);
+
+      if (docs.length === 0) return null;
+      const currentDoc = docs[idx];
+      const progress = ((idx) / docs.length) * 100 || 5;
+
+      const handleChoice = (type) => {
+        if (type === currentDoc.type) {
+          onSuccess("¡TEXTO CLASIFICADO!", "Has identificado la categoría o figura exacta.", currentDoc.exp, 25, (xpGained) => {
+            const total = accumulatedXp + xpGained;
+            setAccumulatedXp(total);
+            if (idx + 1 < docs.length) {
+              setIdx(i => i + 1);
+            } else {
+              onFinish(3, total, 'Clasificador de Textos');
+            }
+          });
+        } else {
+          onError("INCORRECTO", "El fragmento no pertenece a esta categoría.", currentDoc.exp);
+        }
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6 pt-4">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={progress} />
+
+          <div className="bg-[#fff9e6] dark:bg-amber-950/30 border-[4px] border-amber-200 dark:border-amber-800/60 rounded-[32px] p-8 relative space-y-4 shadow-sm transition-colors">
+            <i className="fa-solid fa-quote-left text-amber-300 dark:text-amber-700 text-5xl opacity-50 absolute top-6 left-6"></i>
+            <p className="font-serif italic text-xl text-slate-800 dark:text-amber-100 leading-relaxed relative z-10 font-medium pl-6">
+              {currentDoc.text}
+            </p>
+            <div className="text-right text-sm font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest mt-4">
+              — {currentDoc.sub}
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4">
+            <h4 className="font-display font-black text-slate-800 dark:text-white text-xl text-center">
+              ¿A qué categoría pertenece este fragmento?
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {currentDoc.options.map((opt, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleChoice(opt.id)}
+                  className="bg-duoPurple text-white font-display font-black p-4 rounded-[20px] shadow-btn-purple text-base border-x-2 border-t-2 border-b-[6px] border-black/10 hover:bg-duoPurpleDark duo-pressable"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- GAME 5: CONECTA CONCEPTOS ---
+    function GameConecta({ chapter, setCurrentView, onSuccess, onError, onFinish }) {
+      const [pairs, setPairs] = useState([]);
+      const [lefts, setLefts] = useState([]);
+      const [rights, setRights] = useState([]);
+      const [selectedLeft, setSelectedLeft] = useState(null);
+      const [matched, setMatched] = useState([]);
+
+      useEffect(() => {
+        const loadedPairs = window.QuestionBank.getConecta(chapter.id, 4);
+        setPairs(loadedPairs);
+        setLefts([...loadedPairs].sort(() => Math.random() - 0.5));
+        setRights([...loadedPairs].sort(() => Math.random() - 0.5));
+        setSelectedLeft(null);
+        setMatched([]);
+      }, [chapter.id]);
+
+      const progress = pairs.length > 0 ? (matched.length / pairs.length) * 100 : 0;
+
+      const handleLeftClick = (item) => {
+        playSound('pop');
+        setSelectedLeft(item);
+      };
+
+      const handleRightClick = (item) => {
+        if (!selectedLeft) return;
+
+        if (selectedLeft.id === item.id) {
+          playSound('success');
+          const newMatched = [...matched, item.id];
+          setMatched(newMatched);
+          setSelectedLeft(null);
+
+          if (newMatched.length === pairs.length) {
+            onSuccess("¡TODAS LAS PAREJAS UNIDAS!", "Has conectado correctamente todos los conceptos.", "¡Excelente memoria y síntesis lingüística!", 30, (totalXp) => {
+              onFinish(3, totalXp, 'Conecta Conceptos');
+            });
+          }
+        } else {
+          onError("PAREJA INCORRECTA", "El concepto no coincide con la definición elegida.", selectedLeft.exp);
+          setSelectedLeft(null);
+        }
+      };
+
+      return (
+        <div className="max-w-3xl mx-auto space-y-6 pt-4">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={progress || 5} />
+
+          <div className="text-center pb-2">
+            <h2 className="text-3xl font-display font-black text-slate-800 dark:text-white">Relaciona las Parejas</h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-4">
+              {lefts.map(item => {
+                const isMatched = matched.includes(item.id);
+                const isSelected = selectedLeft?.id === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    disabled={isMatched}
+                    onClick={() => handleLeftClick(item)}
+                    className={`w-full p-4 rounded-[20px] font-display font-black text-sm sm:text-lg text-center border-2 border-b-[6px] transition-all ${
+                      isMatched ? 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 text-slate-300 opacity-50' :
+                      isSelected ? 'bg-blue-50 dark:bg-blue-950/60 text-duoBlue border-duoBlue' :
+                      'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white'
+                    }`}
+                  >
+                    {item.left}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="space-y-4">
+              {rights.map(item => {
+                const isMatched = matched.includes(item.id);
+                return (
+                  <button
+                    key={item.id}
+                    disabled={isMatched}
+                    onClick={() => handleRightClick(item)}
+                    className={`w-full p-4 rounded-[20px] font-display font-bold text-sm sm:text-base text-center border-2 border-b-[6px] transition-all ${
+                      isMatched ? 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 text-slate-300 opacity-50' :
+                      'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-white'
+                    }`}
+                  >
+                    {item.right}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- GAME 6: VERDAD O MITO ---
+    function GameVeritat({ chapter, setCurrentView, onSuccess, onError, onFinish }) {
+      const [items, setItems] = useState([]);
+      const [idx, setIdx] = useState(0);
+      const [accumulatedXp, setAccumulatedXp] = useState(0);
+
+      useEffect(() => {
+        setItems(window.QuestionBank.getVeritat(chapter.id, 3));
+        setIdx(0);
+        setAccumulatedXp(0);
+      }, [chapter.id]);
+
+      if (items.length === 0) return null;
+      const current = items[idx];
+      const progress = ((idx) / items.length) * 100 || 10;
+
+      const handleAnswer = (userBool) => {
+        if (userBool === current.isTrue) {
+          onSuccess("¡VERDICTO CORRECTO!", userBool ? "Es completamente correcto." : "Efectivamente es un mito o afirmación falsa.", current.exp, 20, (xpGained) => {
+            const total = accumulatedXp + xpGained;
+            setAccumulatedXp(total);
+            if (idx + 1 < items.length) {
+              setIdx(i => i + 1);
+            } else {
+              onFinish(3, total, 'Verdad o Mito');
+            }
+          });
+        } else {
+          onError("VERDICTO INCORRECTO", "La afirmación requería el juicio contrario.", current.exp);
+        }
+      };
+
+      return (
+        <div className="max-w-xl mx-auto space-y-6 pt-4 text-center">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={progress} />
+
+          <div className="bg-white dark:bg-slate-800 border-[4px] border-b-[8px] border-slate-200 dark:border-slate-700 rounded-[32px] p-10 space-y-6 shadow-sm transition-colors">
+            <div className="w-20 h-20 bg-yellow-100 dark:bg-yellow-950/60 text-duoYellow rounded-full flex items-center justify-center text-4xl mx-auto border-4 border-yellow-200 dark:border-yellow-800 animate-float-duo">
+              <i className="fa-solid fa-lightbulb"></i>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-display font-black text-slate-800 dark:text-white leading-snug">
+              «{current.statement}»
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-4">
+            <button
+              onClick={() => handleAnswer(true)}
+              className="bg-duoGreen text-white font-display font-black text-xl py-5 rounded-[24px] border-x-2 border-t-2 border-b-[6px] border-black/10 shadow-btn-green duo-pressable"
+            >
+              <i className="fa-solid fa-check text-2xl mb-1 block"></i> VERDAD
+            </button>
+            <button
+              onClick={() => handleAnswer(false)}
+              className="bg-duoRed text-white font-display font-black text-xl py-5 rounded-[24px] border-x-2 border-t-2 border-b-[6px] border-black/10 shadow-btn-red duo-pressable"
+            >
+              <i className="fa-solid fa-xmark text-2xl mb-1 block"></i> MITO / FALSO
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // --- GAME 7: EL HUECO PERDIDO ---
+    function GameMotPerdut({ chapter, setCurrentView, onSuccess, onError, onFinish }) {
+      const [data, setData] = useState(null);
+      const [answers, setAnswers] = useState({});
+
+      useEffect(() => {
+        setData(window.QuestionBank.getMotPerdut(chapter.id));
+        setAnswers({});
+      }, [chapter.id]);
+
+      if (!data) return null;
+
+      const progress = Object.keys(answers).length > 0 ? (Object.keys(answers).length / data.blanks.length) * 100 : 5;
+
+      const handleSelect = (blankId, val) => {
+        playSound('pop');
+        setAnswers(prev => ({ ...prev, [blankId]: val }));
+      };
+
+      const validate = () => {
+        let allOk = true;
+        data.blanks.forEach(b => {
+          if (answers[b.id] !== b.answer) allOk = false;
+        });
+
+        if (allOk && Object.keys(answers).length === data.blanks.length) {
+          onSuccess("¡TEXTO RECONSTRUIDO!", "Has completado todas las palabras correctamente.", data.exp, 30, (totalXp) => {
+            onFinish(3, totalXp, 'El Hueco Perdido');
+          });
+        } else {
+          onError("TEXTO INCOMPLETO O CON ERRORES", "Algunos términos no concuerdan contextualmente.", data.exp);
+        }
+      };
+
+      return (
+        <div className="max-w-2xl mx-auto space-y-6 pt-4">
+          <GameHeader setCurrentView={setCurrentView} currentProgress={progress} />
+
+          <h2 className="text-3xl font-display font-black text-slate-800 dark:text-white text-center pb-2">
+            Rellena los huecos
+          </h2>
+
+          <div className="bg-white dark:bg-slate-800 border-[3px] border-b-[6px] border-slate-200 dark:border-slate-700 rounded-[32px] p-8 text-lg sm:text-xl font-bold text-slate-700 dark:text-slate-200 leading-relaxed shadow-sm transition-colors">
+            {data.text}
+          </div>
+
+          <div className="space-y-4 pt-2">
+            {data.blanks.map((b, i) => (
+              <div key={b.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900 p-5 rounded-[24px] border-[3px] border-slate-200 dark:border-slate-800">
+                <span className="font-display font-black text-slate-500 dark:text-slate-400 text-base">Hueco {i + 1}:</span>
+                <div className="flex flex-wrap gap-2">
+                  {b.options.map((opt, j) => (
+                    <button
+                      key={j}
+                      onClick={() => handleSelect(b.id, opt)}
+                      className={`px-5 py-3 rounded-[16px] font-display font-black text-sm sm:text-base border-2 border-b-4 transition-all ${
+                        answers[b.id] === opt ? 'bg-duoBlue text-white border-duoBlueDark' : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-white'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-6">
+            <button
+              onClick={validate}
+              className="w-full bg-duoEmerald text-white font-display font-black text-xl py-4 rounded-[24px] border-x-2 border-t-2 border-b-[6px] border-black/10 shadow-btn-emerald duo-pressable"
+            >
+              Comprobar Resultado
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // --- COMPONENTE PRINCIPAL APP ---
+    function App() {
+      const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('lq_dark_mode') === 'true');
+
+      useEffect(() => {
+        if (isDarkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('lq_dark_mode', isDarkMode);
+      }, [isDarkMode]);
+
+      const toggleDarkMode = () => {
+        playSound('pop');
+        setIsDarkMode(prev => !prev);
+      };
+
+      const [hearts, setHearts] = useState(() => {
+        const saved = localStorage.getItem('lq_hearts');
+        return saved !== null ? parseInt(saved, 10) : 5;
+      });
+
+      const [xp, setXp] = useState(() => {
+        const saved = localStorage.getItem('lq_xp');
+        return saved !== null ? parseInt(saved, 10) : 0;
+      });
+
+      const [gems, setGems] = useState(() => {
+        const saved = localStorage.getItem('lq_gems');
+        return saved !== null ? parseInt(saved, 10) : 20;
+      });
+
+      const [streak, setStreak] = useState(() => {
+        const savedStreak = localStorage.getItem('lq_streak');
+        return savedStreak !== null ? parseInt(savedStreak, 10) : 1;
+      });
+
+      const [selectedChapter, setSelectedChapter] = useState(1);
+
+      const [inventory, setInventory] = useState(() => {
+        const saved = localStorage.getItem('lq_inventory');
+        return saved ? JSON.parse(saved) : { fiftyFifty: 0, doubleXp: false, shield: 0 };
+      });
+
+      const [nodeProgress, setNodeProgress] = useState(() => {
+        const saved = localStorage.getItem('lq_nodeProgress');
+        return saved ? JSON.parse(saved) : {};
+      });
+
+      const [currentView, setCurrentView] = useState('path');
+      const [screenEffect, setScreenEffect] = useState('');
+      const [showNoLivesModal, setShowNoLivesModal] = useState(false);
+      const [showCprModal, setShowCprModal] = useState(false);
+      const [cprClicks, setCprClicks] = useState(0);
+      const [lastResultData, setLastResultData] = useState(null);
+      const [extraLifeToast, setExtraLifeToast] = useState(false);
+      const [flyingRewards, setFlyingRewards] = useState([]);
+
+      useEffect(() => {
+        localStorage.setItem('lq_hearts', hearts);
+        localStorage.setItem('lq_xp', xp);
+        localStorage.setItem('lq_gems', gems);
+        localStorage.setItem('lq_streak', streak);
+        localStorage.setItem('lq_inventory', JSON.stringify(inventory));
+        localStorage.setItem('lq_nodeProgress', JSON.stringify(nodeProgress));
+      }, [hearts, xp, gems, streak, inventory, nodeProgress]);
+
+      const [sheet, setSheet] = useState({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: '',
+        explanation: '',
+        onContinue: null
+      });
+
+      const spawnRewardAnimation = (iconClass, colorClass) => {
+        const id = Date.now() + Math.random();
+        setFlyingRewards(prev => [...prev, { id, iconClass, colorClass }]);
+        setTimeout(() => {
+          setFlyingRewards(prev => prev.filter(r => r.id !== id));
+        }, 1200);
+      };
+
+      const triggerError = (title, message, exp) => {
+        playSound('error');
+
+        let wasShielded = false;
+        if (inventory.shield > 0) {
+          wasShielded = true;
+          setInventory(prev => ({ ...prev, shield: prev.shield - 1 }));
+        } else {
+          setHearts(h => {
+            const next = Math.max(0, h - 1);
+            if (next === 0) {
+              setTimeout(() => {
+                setCprClicks(0);
+                setShowCprModal(true);
+              }, 600);
+            }
+            return next;
+          });
+        }
+
+        setScreenEffect('screen-shake flash-red');
+        setTimeout(() => setScreenEffect(''), 500);
+
+        setSheet({
+          isOpen: true,
+          type: 'error',
+          title: wasShielded ? "¡ESCUDO ACTIVADO!" : (title || "¡ERROR LINGÜÍSTICO!"),
+          message: wasShielded ? "Tu escudo te ha salvado de perder una vida." : (message || "Esa opción no es correcta."),
+          explanation: exp || "Repasa la teoría del tema.",
+          onContinue: () => setSheet(s => ({ ...s, isOpen: false }))
+        });
+      };
+
+      const triggerSuccess = (title, message, exp, points = 20, callback = null) => {
+        playSound('success');
+
+        let earnedXp = points;
+        if (inventory.doubleXp) {
+          earnedXp = points * 2;
+          setInventory(prev => ({ ...prev, doubleXp: false }));
+        }
+
+        setXp(x => x + earnedXp);
+        setGems(g => g + 5);
+        playSound('gemGain');
+
+        spawnRewardAnimation('fa-bolt', 'text-duoBlue');
+        spawnRewardAnimation('fa-gem', 'text-amber-400');
+
+        setScreenEffect('flash-green');
+        setTimeout(() => setScreenEffect(''), 500);
+
+        if (hearts < 5 && Math.random() < 0.25) {
+          setHearts(h => Math.min(5, h + 1));
+          playSound('lifeGain');
+          setExtraLifeToast(true);
+          setTimeout(() => setExtraLifeToast(false), 2500);
+        }
+
+        setSheet({
+          isOpen: true,
+          type: 'success',
+          title: title || "¡MUY BIEN!",
+          message: message || "Has acertado la respuesta.",
+          explanation: (inventory.doubleXp ? "⚡ ¡2x XP Aplicado! " : "") + (exp || ""),
+          onContinue: () => {
+            setSheet(s => ({ ...s, isOpen: false }));
+            if (callback) callback(earnedXp);
+          }
+        });
+      };
+
+      const handleCprClick = () => {
+        if (cprClicks + 1 >= 10) {
+          playSound('heal');
+          playSound('heartbeat');
+          triggerConfetti();
+          setCprClicks(10);
+          setTimeout(() => {
+            setHearts(5);
+            setShowCprModal(false);
+            setCurrentView('path');
+          }, 1200);
+        } else {
+          playSound('cpr');
+          setCprClicks(c => c + 1);
+        }
+      };
+
+      const handleGameFinish = (nodeKey, stars, xpEarned, moduleName) => {
+        setNodeProgress(prev => ({ ...prev, [nodeKey]: Math.max(prev[nodeKey] || 0, stars) }));
+        setGems(g => g + 10);
+        setLastResultData({ stars, xpEarned, moduleName });
+        setCurrentView('results');
+      };
+
+      return (
+        <div className={`min-h-screen text-slate-800 dark:text-slate-100 flex flex-col font-sans transition-all duration-300 ${screenEffect}`}>
+          
+          {currentView === 'path' && (
+            <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b-[3px] border-slate-200 dark:border-slate-800 shadow-sm px-4 py-3 transition-colors">
+              <div className="max-w-4xl mx-auto flex items-center justify-between">
+                
+                <div 
+                  onClick={() => { playSound('pop'); setCurrentView('path'); }}
+                  className="flex items-center gap-3 cursor-pointer group"
+                >
+                  <div className="w-12 h-12 rounded-[18px] bg-duoGreen flex items-center justify-center text-white text-2xl font-black shadow-btn-green group-hover:scale-105 transition-transform border-2 border-black/10">
+                    <i className="fa-solid fa-pen-nib"></i>
+                  </div>
+                  <div className="hidden sm:block">
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-2xl font-display font-black tracking-tight text-slate-800 dark:text-white leading-none">
+                        Lengua<span className="text-duoGreen">Quest - DEMO</span>
+                      </h1>
+                      <span className="bg-amber-400 text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm border border-amber-500">
+                        PRO
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 sm:gap-5 font-display font-black text-base">
+                  <button onClick={() => { playSound('pop'); setCurrentView('shop'); }} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors text-xl">
+                    <i className="fa-solid fa-store"></i>
+                  </button>
+
+                  <button onClick={() => { playSound('pop'); setCurrentView('profile'); }} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors text-xl">
+                    <i className="fa-solid fa-user"></i>
+                  </button>
+
+                  <button onClick={toggleDarkMode} className="text-amber-500 dark:text-yellow-400 hover:opacity-80 transition-opacity text-xl">
+                    <i className={`fa-solid ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
+                  </button>
+
+                  <div className="flex items-center gap-2 text-duoOrange">
+                    <i className="fa-solid fa-fire text-xl sm:text-2xl"></i>
+                    <span>{streak}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-duoBlue">
+                    <i className="fa-solid fa-gem text-xl sm:text-2xl"></i>
+                    <span>{gems}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-duoRed relative">
+                    <i className={`fa-solid fa-heart text-xl sm:text-2xl ${hearts === 0 ? 'text-slate-300 dark:text-slate-600' : ''}`}></i>
+                    <span>{hearts}</span>
+                    <AnimatePresence>
+                      {extraLifeToast && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                          animate={{ opacity: 1, y: -25, scale: 1 }}
+                          exit={{ opacity: 0, y: -35 }}
+                          className="absolute whitespace-nowrap bg-duoRed text-white text-xs px-2 py-0.5 rounded-full shadow-md font-black"
+                        >
+                          +1 ❤️
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+              </div>
+            </header>
+          )}
+
+          <div className="fixed inset-0 pointer-events-none z-[120] overflow-hidden">
+            <AnimatePresence>
+              {flyingRewards.map(reward => (
+                <motion.div
+                  key={reward.id}
+                  initial={{ opacity: 0, scale: 0.5, x: '50vw', y: '60vh' }}
+                  animate={{ 
+                    opacity: [0, 1, 1, 0], 
+                    scale: [0.5, 1.8, 1.2, 0.6], 
+                    x: ['50vw', `${45 + Math.random() * 10}vw`, '75vw'], 
+                    y: ['60vh', '30vh', '3vh'] 
+                  }}
+                  transition={{ duration: 1.1, ease: 'easeOut' }}
+                  className={`absolute text-4xl drop-shadow-lg ${reward.colorClass}`}
+                >
+                  <i className={`fa-solid ${reward.iconClass}`}></i>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+
+          <main className="flex-1 max-w-4xl w-full mx-auto p-4 md:p-6 my-2 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {currentView === 'path' && (
+                <motion.div key="path" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }}>
+                  <PathMap selectedChapter={selectedChapter} setSelectedChapter={setSelectedChapter} nodeProgress={nodeProgress} setCurrentView={setCurrentView} />
+                </motion.div>
+              )}
+              {currentView === 'shop' && (
+                <motion.div key="shop" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}>
+                  <ShopView gems={gems} setGems={setGems} hearts={hearts} setHearts={setHearts} inventory={inventory} setInventory={setInventory} setCurrentView={setCurrentView} />
+                </motion.div>
+              )}
+              {currentView === 'profile' && (
+                <motion.div key="profile" initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -40 }}>
+                  <ProfileView xp={xp} streak={streak} nodeProgress={nodeProgress} setCurrentView={setCurrentView} isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+                </motion.div>
+              )}
+              {currentView === 'results' && lastResultData && (
+                <motion.div key="results" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+                  <ResultsView resultData={lastResultData} setCurrentView={setCurrentView} />
+                </motion.div>
+              )}
+              {currentView === 'timeline' && (
+                <motion.div key="timeline" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameTimeline chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_timeline`, s, xp, name)} />
+                </motion.div>
+              )}
+              {currentView === 'kahoot' && (
+                <motion.div key="kahoot" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameKahoot chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_kahoot`, s, xp, name)} inventory={inventory} setInventory={setInventory} />
+                </motion.div>
+              )}
+              {currentView === 'extraKahoot' && (
+                <motion.div key="extraKahoot" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameExtraKahoot chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_extraKahoot`, s, xp, name)} inventory={inventory} setInventory={setInventory} />
+                </motion.div>
+              )}
+              {currentView === 'xafarderia' && (
+                <motion.div key="xafarderia" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameXafarderia chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_xafarderia`, s, xp, name)} />
+                </motion.div>
+              )}
+              {currentView === 'boe' && (
+                <motion.div key="boe" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameBOE chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_boe`, s, xp, name)} />
+                </motion.div>
+              )}
+              {currentView === 'conecta' && (
+                <motion.div key="conecta" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameConecta chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_conecta`, s, xp, name)} />
+                </motion.div>
+              )}
+              {currentView === 'veritat' && (
+                <motion.div key="veritat" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameVeritat chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_veritat`, s, xp, name)} />
+                </motion.div>
+              )}
+              {currentView === 'motPerdut' && (
+                <motion.div key="motPerdut" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
+                  <GameMotPerdut chapter={window.QuestionBank.getChapter(selectedChapter)} setCurrentView={setCurrentView} onSuccess={triggerSuccess} onError={triggerError} onFinish={(s, xp, name) => handleGameFinish(`c${selectedChapter}_motPerdut`, s, xp, name)} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </main>
+
+          <AnimatePresence>
+            {showCprModal && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="fixed inset-0 z-50 bg-slate-900/90 flex flex-col items-center justify-center p-6 text-white"
+              >
+                <div className="text-center space-y-6 max-w-sm">
+                  <div className="w-32 h-32 mx-auto relative group">
+                    <div className="absolute inset-0 bg-duoRed rounded-full opacity-20 animate-ping"></div>
+                    <button 
+                      onClick={handleCprClick}
+                      className="relative z-10 w-full h-full bg-duoRed rounded-full shadow-btn-red flex items-center justify-center text-6xl active:translate-y-2 active:shadow-none transition-all hover:scale-105"
+                    >
+                      ❤️
+                    </button>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-display font-black mb-2">¡Reanimación!</h2>
+                    <p className="text-slate-300 font-bold">Haz clic rápido para salvar tu vida.</p>
+                  </div>
+                  <div className="w-full bg-slate-800 h-6 rounded-full overflow-hidden border-2 border-slate-700 relative">
+                    <div 
+                      className="bg-gradient-to-r from-duoRed to-duoYellow h-full transition-all duration-300 rounded-full"
+                      style={{ width: `${(cprClicks / 10) * 100}%` }}
+                    ></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-black text-white mix-blend-overlay">
+                      {cprClicks} / 10
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {showNoLivesModal && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 bg-slate-900/90 flex flex-col items-center justify-center p-6">
+                <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-sm w-full text-center space-y-6 border-4 border-slate-200 dark:border-slate-700">
+                  <div className="text-7xl mb-4">💔</div>
+                  <h2 className="text-3xl font-display font-black text-slate-800 dark:text-white">Sin vidas</h2>
+                  <p className="text-slate-500 dark:text-slate-300 font-bold text-lg">Consigue más vidas en la tienda para continuar.</p>
+                  <button 
+                    onClick={() => { setShowNoLivesModal(false); setCurrentView('shop'); }}
+                    className="w-full bg-duoGreen text-white font-display font-black text-xl py-4 rounded-[20px] shadow-btn-green border-x-2 border-t-2 border-b-[6px] border-black/10"
+                  >
+                    Ir a la Tienda
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {sheet.isOpen && (
+              <>
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/20 z-40" onClick={() => sheet.onContinue && sheet.onContinue()} />
+                <motion.div 
+                  initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                  className={`fixed bottom-0 left-0 right-0 z-50 p-6 sm:p-8 rounded-t-[32px] border-t-2 ${
+                    sheet.type === 'success' ? 'bg-duoBgSuccess dark:bg-emerald-950 border-duoGreen' : 'bg-duoBgError dark:bg-rose-950 border-duoRed'
+                  }`}
+                >
+                  <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                    <div className="flex items-start gap-4">
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl shrink-0 bg-white dark:bg-slate-800 shadow-sm border-2 ${
+                        sheet.type === 'success' ? 'text-duoGreen border-duoBgSuccess' : 'text-duoRed border-duoBgError'
+                      }`}>
+                        <i className={`fa-solid ${sheet.type === 'success' ? 'fa-check' : 'fa-xmark'}`}></i>
+                      </div>
+                      <div className="space-y-1 pt-1">
+                        <h3 className={`font-display font-black text-2xl ${
+                          sheet.type === 'success' ? 'text-duoTextSuccess dark:text-emerald-300' : 'text-duoTextError dark:text-rose-300'
+                        }`}>
+                          {sheet.title}
+                        </h3>
+                        <p className={`text-base sm:text-lg font-bold ${
+                          sheet.type === 'success' ? 'text-duoTextSuccess dark:text-emerald-200' : 'text-duoTextError dark:text-rose-200'
+                        }`}>
+                          {sheet.message}
+                        </p>
+                        <p className={`text-sm font-bold ${
+                          sheet.type === 'success' ? 'text-duoTextSuccess dark:text-emerald-300' : 'text-duoTextError dark:text-rose-300'
+                        } opacity-75 mt-1`}>
+                          {sheet.explanation}
+                        </p>
+                      </div>
+                    </div>
+
+                    <button 
+                      onClick={sheet.onContinue}
+                      className={`w-full sm:w-auto min-w-[200px] font-display font-black text-xl py-4 px-8 rounded-[24px] shadow-sm border-x-2 border-t-2 border-b-[6px] border-black/10 ${
+                        sheet.type === 'success' ? 'bg-duoGreen text-white shadow-btn-green' : 'bg-duoRed text-white shadow-btn-red'
+                      }`}
+                    >
+                      Continuar
+                    </button>
+                  </div>
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
